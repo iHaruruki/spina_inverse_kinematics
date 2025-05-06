@@ -8,6 +8,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -29,8 +30,18 @@ ament_target_dependencies(inverse_kinematics_node
   Eigen3
 )
 
+add_executable(target_pose_publisher_node src/target_pose_publisher.py)
+ament_target_dependencies(target_pose_publisher_node
+  rclpy
+  geometry_msgs
+)
+
 install(TARGETS inverse_kinematics_node
   DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS target_pose_publisher_node
+  DESTINATION lib${PROJECT_NAME}
 )
 
 install(DIRECTORY urdf launch rviz
