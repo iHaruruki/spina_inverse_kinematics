@@ -33,7 +33,7 @@ install(TARGETS inverse_kinematics_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY urdf launch
+install(DIRECTORY urdf launch rviz
   DESTINATION share/${PROJECT_NAME}
 )
 # uncomment the following section in order to fill in
