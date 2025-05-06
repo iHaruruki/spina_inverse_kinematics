@@ -1,50 +1,73 @@
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <Eigen/Dense>
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 
 using namespace Eigen;
+using std::vector;
 
-constexpr double DEG2RAD = M_PI / 180.0;
-constexpr double MAX_TILT_RAD = 30.0 * DEG2RAD;
+constexpr double DEG2RAD    = M_PI / 180.0;
+constexpr double MAX_TILT   = 30.0 * DEG2RAD;
 
 class IKNode : public rclcpp::Node {
 public:
   IKNode(): Node("inverse_kinematics_node") {
-    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
-    pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+    joint_pub_ = create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+    pose_sub_ = create_subscription<geometry_msgs::msg::PoseStamped>(
       "target_pose", 10,
       std::bind(&IKNode::poseCallback, this, std::placeholders::_1)
     );
-    joint_state_.name.resize(6);
-    for (int i = 0; i < 6; ++i) {
-      joint_state_.name[i] = "joint" + std::to_string(i+1);
+
+    // ジョイント名 (yaw, then pitch1,roll1, … pitch6,roll6)
+    joint_state_.name.push_back("yaw");
+    for(int i=1; i<=6; ++i) {
+      joint_state_.name.push_back("pitch"+std::to_string(i));
+      joint_state_.name.push_back("roll"+ std::to_string(i));
     }
-    joint_state_.position.resize(6, 0.0);
+    joint_state_.position.assign(joint_state_.name.size(), 0.0);
   }
 
 private:
   void poseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
-    // 同次変換行列を構成
-    Matrix4d target = Matrix4d::Identity();
-    auto &p = msg->pose.position;
-    target(0,3) = p.x;
-    target(1,3) = p.y;
-    target(2,3) = p.z;
-    // IK計算
-    double x = target(0,3), y = target(1,3), z = target(2,3);
-    double base = std::atan2(y,x);
-    double r = std::hypot(x,y);
-    double overall_tilt = std::atan2(z,r);
-    double per = overall_tilt / 5.0;
-    if (std::abs(per) > MAX_TILT_RAD) per = (per>0?MAX_TILT_RAD:-MAX_TILT_RAD);
+    // 目標位置
+    double x = msg->pose.position.x;
+    double y = msg->pose.position.y;
+    double z = msg->pose.position.z;
 
-    joint_state_.header.stamp = this->now();
-    joint_state_.position[0] = base;
-    for (int i=1; i<6; ++i) joint_state_.position[i] = per;
+    // 基底 yaw
+    double yaw = std::atan2(y, x);
+
+    // 目標姿勢から roll, pitch を抽出
+    Quaterniond q(
+      msg->pose.orientation.w,
+      msg->pose.orientation.x,
+      msg->pose.orientation.y,
+      msg->pose.orientation.z
+    );
+    Matrix3d R = q.toRotationMatrix();
+    // ZYX 順で Euler: [yaw, pitch, roll]
+    Vector3d e = R.eulerAngles(2,1,0);
+    double target_pitch = e[1];
+    double target_roll  = e[2];
+
+    // モジュール毎に均等分配
+    double per_pitch = target_pitch / 6.0;
+    double per_roll  = target_roll  / 6.0;
+    per_pitch = std::min(std::max(per_pitch, -MAX_TILT), MAX_TILT);
+    per_roll  = std::min(std::max(per_roll,  -MAX_TILT), MAX_TILT);
+
+    // joint_state を設定
+    joint_state_.header.stamp = now();
+    size_t idx = 0;
+    joint_state_.position[idx++] = yaw;
+    for(int i=0; i<6; ++i) {
+      joint_state_.position[idx++] = per_pitch;
+      joint_state_.position[idx++] = per_roll;
+    }
     joint_pub_->publish(joint_state_);
   }
 
