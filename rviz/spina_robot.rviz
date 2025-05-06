@@ -1,0 +1,39 @@
+Panels:
+  - Class: rviz/Displays
+    Name: Displays
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Views
+    Name: Views
+    Property Tree:
+      Current:
+        Class: rviz/Orbit
+        Distance: 3.0
+        Focal Point: [0, 0, 0]
+        Name: Orbit
+        Value: Orbit
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Enabled: true
+      Link Color: [255, 255, 255]
+      Name: Robot Model
+      Robot Description Topic: /robot_description
+      TF Prefix: ""
+      Update Interval: 0.0
+  Enabled: true
+  Global Options:
+    Background Color: [48, 48, 48]
+    Fixed Frame: base_link
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: false
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+Views:
+  Current: Orbit
+  Saved: {}
