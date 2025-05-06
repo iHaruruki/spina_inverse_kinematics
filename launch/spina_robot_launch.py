@@ -1,17 +1,16 @@
+import os
+
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch_ros.actions import Node
-from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.substitutions import FindPackageShare
+from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
-    pkg_share = FindPackageShare('spina_inverse_kinematics').find('spina_inverse_kinematics')
+    pkg_share = get_package_share_directory('spina_inverse_kinematics')
+    urdf_path = os.path.join(pkg_share, 'urdf', 'spina_robot.urdf')
 
-    # URDF を robot_description パラメータとして読み込む
-    robot_description = Command([
-        'xacro ', PathJoinSubstitution([pkg_share, 'urdf', 'spine_robot.urdf'])
-    ])
+    # URDF を文字列として読み込む
+    with open(urdf_path, 'r') as infp:
+        robot_description_content = infp.read()
 
     return LaunchDescription([
         # robot_state_publisher ノード
@@ -20,10 +19,10 @@ def generate_launch_description():
             executable='robot_state_publisher',
             name='robot_state_publisher',
             output='screen',
-            parameters=[{'robot_description': robot_description}]
+            parameters=[{'robot_description': robot_description_content}]
         ),
 
-        # joint_state_publisher_gui （必要であれば）
+        # joint_state_publisher_gui（デバッグ用。不要なら消す）
         Node(
             package='joint_state_publisher_gui',
             executable='joint_state_publisher_gui',
@@ -39,12 +38,12 @@ def generate_launch_description():
             output='screen'
         ),
 
-        # rviz2 ノード
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            output='screen',
-            arguments=['-d', PathJoinSubstitution([pkg_share, 'rviz', 'spine_robot.rviz'])]
-        ),
+        # rviz2
+        #Node(
+        #    package='rviz2',
+        #    executable='rviz2',
+        #    name='rviz2',
+        #    output='screen',
+        #    arguments=['-d', os.path.join(pkg_share, 'rviz', 'spina_robot.rviz')]
+        #),
     ])
