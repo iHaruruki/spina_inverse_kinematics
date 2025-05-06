@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="spine_robot">
 
-  <!-- 基底リンク -->
+  <!-- Base -->
   <link name="base_link">
     <visual>
       <geometry><cylinder radius="0.1" length="0.15"/></geometry>
@@ -16,9 +16,8 @@
     </inertial>
   </link>
 
-  <!-- 以下、各モジュール毎に pitch → roll → module_link の順でジョイントを定義 -->
-  <!-- モジュール間隔は origin xyz="0 0 0.15" で 15cm -->
-  <!-- axis: pitch は y 軸、roll は x 軸 -->
+  <!-- 6 modules: pitch→roll→module_link→fixed to roll_link -->
+  <!-- spacing 0.15m, pitch axis=y, roll axis=x, limits ±30° (0.5236rad) -->
 
   <!-- Module 1 -->
   <link name="module1_pitch_link"/>
@@ -53,6 +52,11 @@
       <inertia ixx="0.0008" iyy="0.0008" izz="0.0008" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
+  <joint name="fixed1" type="fixed">
+    <parent link="module1_roll_link"/>
+    <child  link="module1_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
   <!-- Module 2 -->
   <link name="module2_pitch_link"/>
@@ -82,6 +86,11 @@
       <inertia ixx="0.0008" iyy="0.0008" izz="0.0008" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
+  <joint name="fixed2" type="fixed">
+    <parent link="module2_roll_link"/>
+    <child  link="module2_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
   <!-- Module 3 -->
   <link name="module3_pitch_link"/>
@@ -111,6 +120,11 @@
       <inertia ixx="0.0008" iyy="0.0008" izz="0.0008" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
+  <joint name="fixed3" type="fixed">
+    <parent link="module3_roll_link"/>
+    <child  link="module3_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
   <!-- Module 4 -->
   <link name="module4_pitch_link"/>
@@ -140,6 +154,11 @@
       <inertia ixx="0.0008" iyy="0.0008" izz="0.0008" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
+  <joint name="fixed4" type="fixed">
+    <parent link="module4_roll_link"/>
+    <child  link="module4_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
   <!-- Module 5 -->
   <link name="module5_pitch_link"/>
@@ -169,6 +188,11 @@
       <inertia ixx="0.0008" iyy="0.0008" izz="0.0008" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
+  <joint name="fixed5" type="fixed">
+    <parent link="module5_roll_link"/>
+    <child  link="module5_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
   <!-- Module 6 -->
   <link name="module6_pitch_link"/>
@@ -198,5 +222,10 @@
       <inertia ixx="0.0008" iyy="0.0008" izz="0.0008" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
+  <joint name="fixed6" type="fixed">
+    <parent link="module6_roll_link"/>
+    <child  link="module6_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
 </robot>
