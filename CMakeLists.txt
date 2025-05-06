@@ -7,6 +7,35 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(urdf REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+include_directories(
+  include
+  ${EIGEN3_INCLUDE_DIRS}
+)
+
+add_executable(inverse_kinematics_node src/inverse_kinematics_node.cpp)
+ament_target_dependencies(inverse_kinematics_node
+  rclcpp
+  geometry_msgs
+  sensor_msgs
+  tf2_ros
+  urdf
+  Eigen3
+)
+
+install(TARGETS inverse_kinematics_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY urdf launch
+  DESTINATION share/${PROJECT_NAME}
+)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
