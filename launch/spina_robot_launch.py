@@ -39,11 +39,11 @@ def generate_launch_description():
         ),
 
         # rviz2
-        #Node(
-        #    package='rviz2',
-        #    executable='rviz2',
-        #    name='rviz2',
-        #    output='screen',
-        #    arguments=['-d', os.path.join(pkg_share, 'rviz', 'spina_robot.rviz')]
-        #),
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            output='screen',
+            arguments=['-d', os.path.join(pkg_share, 'rviz', 'spina_robot.rviz')]
+        ),
     ])
