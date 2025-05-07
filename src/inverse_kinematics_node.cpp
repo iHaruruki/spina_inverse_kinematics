@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <Eigen/Dense>
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
@@ -59,9 +60,8 @@ private:
     Vector3d e = R.eulerAngles(2,1,0);  // ZYX: [yaw, pitch, roll]
     double tgt_pitch = e[1];
     double tgt_roll  = e[2];
-
-    double per_pitch = std::clamp(tgt_pitch / 6.0, -MAX_TILT, MAX_TILT);
-    double per_roll  = std::clamp(tgt_roll  / 6.0, -MAX_TILT, MAX_TILT);
+    double per_pitch = std::min(std::max(tgt_pitch / 6.0, -MAX_TILT), MAX_TILT);
+    double per_roll  = std::min(std::max(tgt_roll  / 6.0, -MAX_TILT), MAX_TILT);
 
     // joint_state 更新
     joint_state_.header.stamp = now();

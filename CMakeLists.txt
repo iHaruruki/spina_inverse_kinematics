@@ -30,9 +30,9 @@ ament_target_dependencies(inverse_kinematics_node
   Eigen3
 )
 
-add_executable(target_pose_publisher_node src/target_pose_publisher.py)
+add_executable(target_pose_publisher_node src/target_pose_publisher.cpp)
 ament_target_dependencies(target_pose_publisher_node
-  rclpy
+  rclcpp
   geometry_msgs
 )
 
