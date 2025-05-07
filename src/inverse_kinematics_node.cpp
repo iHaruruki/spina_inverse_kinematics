@@ -1,105 +1,100 @@
-#include <memory>
-#include <vector>
-#include <cmath>
-#include <algorithm>
 #include <chrono>
-#include <Eigen/Dense>
+#include <cmath>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "rclcpp/rclcpp.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "geometry_msgs/msg/point.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 
-using namespace Eigen;
+using std::placeholders::_1;
 using namespace std::chrono_literals;
 
-constexpr double DEG2RAD    = M_PI / 180.0;
-constexpr double MAX_TILT   = 30.0 * DEG2RAD;
-
-class IKNode : public rclcpp::Node {
+class SpineIKNode : public rclcpp::Node
+{
 public:
-  IKNode()
-  : Node("inverse_kinematics_node")
+  SpineIKNode()
+  : Node("spine_ik_node"), num_modules_(6)
   {
-    // joint_states を transient_local QoS で作成し、最後のメッセージを保持
-    auto qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local();
-    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", qos);
+    // Declare and get parameters
+    this->declare_parameter<double>("link_length", 0.15);
+    link_length_ = this->get_parameter("link_length").as_double();
 
-    pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-      "target_pose", 10,
-      std::bind(&IKNode::poseCallback, this, std::placeholders::_1)
-    );
+    // The total link length is used for computing the expected end-effector pose.
+    total_length_ = link_length_ * num_modules_;
 
-    // 定期的に joint_states を再送信するタイマー (10Hz)
-    publish_timer_ = this->create_wall_timer(
-      100ms,
-      std::bind(&IKNode::onTimer, this)
-    );
+    // Create Subscription to "endpoint" topic (the end-effector coordinates)
+    subscription_ = this->create_subscription<geometry_msgs::msg::Point>(
+      "endpoint", 10, std::bind(&SpineIKNode::endpointCallback, this, _1));
 
-    // joint_state の名前をセット (yaw, then pitch1,roll1, … pitch6,roll6)
-    joint_state_.name.push_back("yaw");
-    for (int i = 1; i <= 6; ++i) {
-      joint_state_.name.push_back("pitch" + std::to_string(i));
-      joint_state_.name.push_back("roll"  + std::to_string(i));
-    }
-    joint_state_.position.assign(joint_state_.name.size(), 0.0);
+    // Create Publisher for joint_states
+    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   }
 
 private:
-  void poseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+  void endpointCallback(const geometry_msgs::msg::Point::SharedPtr msg)
   {
-    // 目標位置
-    double x = msg->pose.position.x;
-    double y = msg->pose.position.y;
-    double z = msg->pose.position.z;
+    // When computing individual joint angles per module,
+    // each module is assumed to contribute equally. Thus, for each module:
+    //   module_pitch = asin( x / (num_modules * link_length) )
+    //   module_roll  = asin( y / (num_modules * link_length) )
+    // The overall computed z is then:
+    //   computed_z = num_modules * link_length * cos(module_pitch) * cos(module_roll)
 
-    // 基底 yaw
-    double yaw = std::atan2(y, x);
-
-    // 目標姿勢から ZYX の Euler を取得 (yaw, pitch, roll)
-    Quaterniond q(
-      msg->pose.orientation.w,
-      msg->pose.orientation.x,
-      msg->pose.orientation.y,
-      msg->pose.orientation.z
-    );
-    Matrix3d R = q.toRotationMatrix();
-    auto e = R.eulerAngles(2, 1, 0);
-    double target_pitch = e[1];
-    double target_roll  = e[2];
-
-    // 各モジュールに均等分配しつつクランプ
-    double per_pitch = std::clamp(target_pitch / 6.0, -MAX_TILT, MAX_TILT);
-    double per_roll  = std::clamp(target_roll  / 6.0, -MAX_TILT, MAX_TILT);
-
-    // joint_state を更新
-    joint_state_.header.stamp = this->now();
-    size_t idx = 0;
-    joint_state_.position[idx++] = yaw;
-    for (int i = 0; i < 6; ++i) {
-      joint_state_.position[idx++] = per_pitch;
-      joint_state_.position[idx++] = per_roll;
+    // Validate x/y values so that the argument of asin remains in [-1, 1]
+    if (std::abs(msg->x) > total_length_ || std::abs(msg->y) > total_length_) {
+      RCLCPP_WARN(this->get_logger(),
+        "x or y value (x: %.3f, y: %.3f) exceeds total link length (%.3f m).",
+        msg->x, msg->y, total_length_);
+      return;
     }
 
-    // 即時にパブリッシュ
-    joint_pub_->publish(joint_state_);
+    double module_pitch = 0.0;
+    double module_roll = 0.0;
+    try {
+      module_pitch = std::asin(msg->x / (num_modules_ * link_length_));
+      module_roll  = std::asin(msg->y / (num_modules_ * link_length_));
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(this->get_logger(), "Inverse kinematics calculation failed: %s", e.what());
+      return;
+    }
+
+    double computed_z = num_modules_ * link_length_ * std::cos(module_pitch) * std::cos(module_roll);
+    if (std::abs(computed_z - msg->z) > 0.01) {
+      RCLCPP_WARN(this->get_logger(),
+        "Computed z (%.3f m) does not match provided z (%.3f m).", computed_z, msg->z);
+    }
+
+    // Publish joint states for each module.
+    // Each module has two joints: pitch and roll.
+    auto joint_state_msg = sensor_msgs::msg::JointState();
+    joint_state_msg.header.stamp = this->now();
+
+    for (int i = 1; i <= num_modules_; ++i) {
+      joint_state_msg.name.push_back("pitch" + std::to_string(i));
+      joint_state_msg.position.push_back(module_pitch);
+      joint_state_msg.name.push_back("roll" + std::to_string(i));
+      joint_state_msg.position.push_back(module_roll);
+    }
+
+    joint_pub_->publish(joint_state_msg);
+    RCLCPP_INFO(this->get_logger(),
+      "Published joint angles for each module: pitch = %.3f, roll = %.3f", module_pitch, module_roll);
   }
 
-  void onTimer()
-  {
-    // 最後に計算した joint_state_ を再送信
-    joint_state_.header.stamp = this->now();
-    joint_pub_->publish(joint_state_);
-  }
-
+  rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr subscription_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_pub_;
-  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr pose_sub_;
-  rclcpp::TimerBase::SharedPtr publish_timer_;
-  sensor_msgs::msg::JointState joint_state_;
+  double link_length_;
+  double total_length_;
+  const int num_modules_;
 };
 
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<IKNode>());
+  auto node = std::make_shared<SpineIKNode>();
+  rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
 }

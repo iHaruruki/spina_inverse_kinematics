@@ -1,13 +1,17 @@
 <?xml version="1.0"?>
-<robot name="spine_robot">
+<robot name="spina">
 
   <!-- Base -->
   <link name="base_link">
     <visual>
-      <geometry><cylinder radius="0.1" length="0.15"/></geometry>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
     </visual>
     <collision>
-      <geometry><cylinder radius="0.1" length="0.15"/></geometry>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
     </collision>
     <inertial>
       <mass value="1.0"/>
@@ -16,35 +20,36 @@
     </inertial>
   </link>
 
-  <!-- 6 modules: pitch→roll→module_link→fixed to roll_link -->
-  <!-- spacing 0.15m, pitch axis=y, roll axis=x, limits ±30° (0.5236rad) -->
-
   <!-- Module 1 -->
   <link name="module1_pitch_link"/>
   <joint name="pitch1" type="revolute">
     <parent link="base_link"/>
-    <child  link="module1_pitch_link"/>
+    <child link="module1_pitch_link"/>
     <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <axis  xyz="0 1 0"/>
+    <axis xyz="0 1 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module1_roll_link"/>
   <joint name="roll1" type="revolute">
     <parent link="module1_pitch_link"/>
-    <child  link="module1_roll_link"/>
+    <child link="module1_roll_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis  xyz="1 0 0"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module1_link">
     <visual>
-      <geometry><cylinder radius="0.1" length="0.15"/></geometry>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
       <origin xyz="0 0 0" rpy="0 0 0"/>
     </visual>
     <collision>
-      <geometry><cylinder radius="0.1" length="0.15"/></geometry>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
     </collision>
     <inertial>
       <mass value="0.8"/>
@@ -54,7 +59,7 @@
   </link>
   <joint name="fixed1" type="fixed">
     <parent link="module1_roll_link"/>
-    <child  link="module1_link"/>
+    <child link="module1_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
@@ -62,24 +67,32 @@
   <link name="module2_pitch_link"/>
   <joint name="pitch2" type="revolute">
     <parent link="module1_link"/>
-    <child  link="module2_pitch_link"/>
+    <child link="module2_pitch_link"/>
     <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <axis  xyz="0 1 0"/>
+    <axis xyz="0 1 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module2_roll_link"/>
   <joint name="roll2" type="revolute">
     <parent link="module2_pitch_link"/>
-    <child  link="module2_roll_link"/>
+    <child link="module2_roll_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis  xyz="1 0 0"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module2_link">
-    <visual><geometry><cylinder radius="0.1" length="0.15"/></geometry></visual>
-    <collision><geometry><cylinder radius="0.1" length="0.15"/></geometry></collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="0.8"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -88,7 +101,7 @@
   </link>
   <joint name="fixed2" type="fixed">
     <parent link="module2_roll_link"/>
-    <child  link="module2_link"/>
+    <child link="module2_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
@@ -96,24 +109,32 @@
   <link name="module3_pitch_link"/>
   <joint name="pitch3" type="revolute">
     <parent link="module2_link"/>
-    <child  link="module3_pitch_link"/>
+    <child link="module3_pitch_link"/>
     <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <axis  xyz="0 1 0"/>
+    <axis xyz="0 1 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module3_roll_link"/>
   <joint name="roll3" type="revolute">
     <parent link="module3_pitch_link"/>
-    <child  link="module3_roll_link"/>
+    <child link="module3_roll_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis  xyz="1 0 0"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module3_link">
-    <visual><geometry><cylinder radius="0.1" length="0.15"/></geometry></visual>
-    <collision><geometry><cylinder radius="0.1" length="0.15"/></geometry></collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="0.8"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -122,7 +143,7 @@
   </link>
   <joint name="fixed3" type="fixed">
     <parent link="module3_roll_link"/>
-    <child  link="module3_link"/>
+    <child link="module3_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
@@ -130,24 +151,32 @@
   <link name="module4_pitch_link"/>
   <joint name="pitch4" type="revolute">
     <parent link="module3_link"/>
-    <child  link="module4_pitch_link"/>
+    <child link="module4_pitch_link"/>
     <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <axis  xyz="0 1 0"/>
+    <axis xyz="0 1 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module4_roll_link"/>
   <joint name="roll4" type="revolute">
     <parent link="module4_pitch_link"/>
-    <child  link="module4_roll_link"/>
+    <child link="module4_roll_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis  xyz="1 0 0"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module4_link">
-    <visual><geometry><cylinder radius="0.1" length="0.15"/></geometry></visual>
-    <collision><geometry><cylinder radius="0.1" length="0.15"/></geometry></collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="0.8"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -156,7 +185,7 @@
   </link>
   <joint name="fixed4" type="fixed">
     <parent link="module4_roll_link"/>
-    <child  link="module4_link"/>
+    <child link="module4_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
@@ -164,24 +193,32 @@
   <link name="module5_pitch_link"/>
   <joint name="pitch5" type="revolute">
     <parent link="module4_link"/>
-    <child  link="module5_pitch_link"/>
+    <child link="module5_pitch_link"/>
     <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <axis  xyz="0 1 0"/>
+    <axis xyz="0 1 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module5_roll_link"/>
   <joint name="roll5" type="revolute">
     <parent link="module5_pitch_link"/>
-    <child  link="module5_roll_link"/>
+    <child link="module5_roll_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis  xyz="1 0 0"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module5_link">
-    <visual><geometry><cylinder radius="0.1" length="0.15"/></geometry></visual>
-    <collision><geometry><cylinder radius="0.1" length="0.15"/></geometry></collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="0.8"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -190,7 +227,7 @@
   </link>
   <joint name="fixed5" type="fixed">
     <parent link="module5_roll_link"/>
-    <child  link="module5_link"/>
+    <child link="module5_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
@@ -198,24 +235,32 @@
   <link name="module6_pitch_link"/>
   <joint name="pitch6" type="revolute">
     <parent link="module5_link"/>
-    <child  link="module6_pitch_link"/>
+    <child link="module6_pitch_link"/>
     <origin xyz="0 0 0.15" rpy="0 0 0"/>
-    <axis  xyz="0 1 0"/>
+    <axis xyz="0 1 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module6_roll_link"/>
   <joint name="roll6" type="revolute">
     <parent link="module6_pitch_link"/>
-    <child  link="module6_roll_link"/>
+    <child link="module6_roll_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <axis  xyz="1 0 0"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-0.5236" upper="0.5236" effort="10" velocity="1.0"/>
   </joint>
 
   <link name="module6_link">
-    <visual><geometry><cylinder radius="0.1" length="0.15"/></geometry></visual>
-    <collision><geometry><cylinder radius="0.1" length="0.15"/></geometry></collision>
+    <visual>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <cylinder radius="0.1" length="0.15"/>
+      </geometry>
+    </collision>
     <inertial>
       <mass value="0.8"/>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -224,7 +269,7 @@
   </link>
   <joint name="fixed6" type="fixed">
     <parent link="module6_roll_link"/>
-    <child  link="module6_link"/>
+    <child link="module6_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
