@@ -14,7 +14,7 @@ $ source install/setup.bash
 ## Usage
 ```bash
 1. $ ros2 launch spina_inverse_kinematics spina_robot_launch.py
-# Use the ROS2 CLI to publish to the topic '/target_pose'
+# Use the ROS2 CLI to publish to the topic `/target_pose`
 2. $  ros2 topic pub /target_pose geometry_msgs/PoseStamped '{
         header: { frame_id: "base_link" },
         pose: {
@@ -23,6 +23,10 @@ $ source install/setup.bash
         }
       }' --once
 ```
+### Description
+* header.frame_id: "base_link": このポーズが属する座標フレームを`base_link`に設定
+* pose.position: エンドエフェクタ（手先）の目標位置を x=1.2 m, y=0.5 m, z=0.8 m で指定
+* pose.orientation: エンドエフェクタの姿勢をクォータニオンで指定（ここでは回転無し＝単位クォータニオン）
 ## License
 ## Authors
 ## References
