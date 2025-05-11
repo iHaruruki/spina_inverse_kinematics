@@ -36,12 +36,17 @@ ament_target_dependencies(target_pose_publisher_node
   geometry_msgs
 )
 
-install(TARGETS inverse_kinematics_node
-  DESTINATION lib/${PROJECT_NAME}
+add_executable(forward_kinematics_node src/forward_kinematics_node.cpp)
+ament_target_dependencies(forward_kinematics_node
+  rclcpp
+  geometry_msgs
 )
 
-install(TARGETS target_pose_publisher_node
-  DESTINATION lib${PROJECT_NAME}
+install(TARGETS
+  inverse_kinematics_node
+  target_pose_publisher_node
+  forward_kinematics_node
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY urdf launch rviz
