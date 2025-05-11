@@ -1,7 +1,9 @@
 <?xml version="1.0" ?>
 <robot name="spina">
+  <link name="base_link"/>
+
   <!-- base_link: This link now represents the fixed lower disk -->
-  <link name="base_link">
+  <link name="module1">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -24,6 +26,12 @@
     </inertial>
   </link>
 
+  <joint name="base_to_module1" type="fixed">
+    <parent link="base_link"/>
+    <child link="module1"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
   <!-- Gimbal base link acts as the common pivot point for the gimbal mechanism -->
   <link name="gimbal_base">
     <inertial>
@@ -36,7 +44,7 @@
   <!-- Fixed joint connecting the base_link and the gimbal's pivot -->
   <!-- The pivot (gimbal_base) is located at the midpoint between the two disks (7.5cm above the lower disk) -->
   <joint name="base_to_gimbal" type="fixed">
-    <parent link="base_link"/>
+    <parent link="module1"/>
     <child link="gimbal_base"/>
     <origin xyz="0 0 0.075" rpy="0 0 0"/>
   </joint>
@@ -62,7 +70,7 @@
 
   <!-- Movable top disk -->
   <!-- Its center is positioned 7.5cm above the pivot so that the total center-to-center distance between disks is 15cm -->
-  <link name="top_disk_link">
+  <link name="module2_upper_link">
     <visual>
       <origin xyz="0 0 0.075" rpy="0 0 0"/>
       <geometry>
@@ -88,7 +96,7 @@
   <!-- Roll joint: rotates about the X-axis -->
   <joint name="gimbal_roll" type="revolute">
     <parent link="gimbal_roll_link"/>
-    <child link="top_disk_link"/>
+    <child link="module2_upper_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
     <!-- Limit set to -30° to 30° which is approximately -0.5236 to 0.5236 radians -->
