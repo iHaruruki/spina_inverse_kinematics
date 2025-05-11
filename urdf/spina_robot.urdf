@@ -92,7 +92,6 @@
     </inertial>
   </link>
 
-  <!-- Roll joint: rotates about the X-axis -->
   <joint name="module1_pich_link_TO_module1_upper_link" type="fixed">
     <parent link="module1_pich_link"/>
     <child link="module1_upper_link"/>
@@ -100,7 +99,7 @@
   </joint>
 
   <!--########## Module2 ##########-->
-  <!-- module1_lower_link -->
+  <!-- module2_lower_link -->
   <link name="module2_lower_link">
     <visual>
       <origin xyz="0 0 0.02" rpy="0 0 0"/>
@@ -188,7 +187,6 @@
     </inertial>
   </link>
 
-  <!-- Roll joint: rotates about the X-axis -->
   <joint name="odule2_pich_link_TO_module2_upper_link" type="fixed">
     <parent link="module2_pich_link"/>
     <child link="module2_upper_link"/>
@@ -196,7 +194,7 @@
   </joint>
 
   <!--########## Module3 ##########-->
-  <!-- module1_lower_link -->
+  <!-- module3_lower_link -->
   <link name="module3_lower_link">
     <visual>
       <origin xyz="0 0 0.02" rpy="0 0 0"/>
@@ -260,7 +258,7 @@
     <limit lower="-0.5236" upper="0.5236" effort="1" velocity="1"/>
   </joint>
 
-  <!-- module2_upper_link -->
+  <!-- module3_upper_link -->
   <link name="module3_upper_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -284,7 +282,6 @@
     </inertial>
   </link>
 
-  <!-- Roll joint: rotates about the X-axis -->
   <joint name="odule3_pich_link_TO_module2_upper_link" type="fixed">
     <parent link="module3_pich_link"/>
     <child link="module3_upper_link"/>
