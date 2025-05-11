@@ -1,9 +1,11 @@
 <?xml version="1.0" ?>
 <robot name="spina">
+<!-- base_link -->
   <link name="base_link"/>
 
-  <!-- base_link: This link now represents the fixed lower disk -->
-  <link name="module1">
+  <!--########## Module1 ##########-->
+  <!-- module1_lower_link -->
+  <link name="module1_lower_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -26,14 +28,13 @@
     </inertial>
   </link>
 
-  <joint name="base_to_module1" type="fixed">
+  <joint name="base_link_TO_module1_lower_link" type="fixed">
     <parent link="base_link"/>
-    <child link="module1"/>
+    <child link="module1_lower_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
-  <!-- Gimbal base link acts as the common pivot point for the gimbal mechanism -->
-  <link name="gimbal_base">
+  <link name="module1_gimbal_base">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.05"/>
@@ -44,13 +45,13 @@
   <!-- Fixed joint connecting the base_link and the gimbal's pivot -->
   <!-- The pivot (gimbal_base) is located at the midpoint between the two disks (7.5cm above the lower disk) -->
   <joint name="base_to_gimbal" type="fixed">
-    <parent link="module1"/>
-    <child link="gimbal_base"/>
+    <parent link="module1_lower_link"/>
+    <child link="module1_gimbal_base"/>
     <origin xyz="0 0 0.075" rpy="0 0 0"/>
   </joint>
 
   <!-- Intermediate link for roll rotation -->
-  <link name="gimbal_roll_link">
+  <link name="gimbal_pich_link">
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <mass value="0.05"/>
@@ -60,8 +61,8 @@
 
   <!-- Pitch joint: rotates about the Y-axis -->
   <joint name="gimbal_pitch" type="revolute">
-    <parent link="gimbal_base"/>
-    <child link="gimbal_roll_link"/>
+    <parent link="module1_gimbal_base"/>
+    <child link="gimbal_pich_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <!-- Limit set to -30° to 30° which is approximately -0.5236 to 0.5236 radians -->
@@ -95,7 +96,7 @@
 
   <!-- Roll joint: rotates about the X-axis -->
   <joint name="gimbal_roll" type="revolute">
-    <parent link="gimbal_roll_link"/>
+    <parent link="gimbal_pich_link"/>
     <child link="module2_upper_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
