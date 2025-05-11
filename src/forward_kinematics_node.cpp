@@ -1,88 +1,113 @@
-#include <iostream>
+#include <chrono>
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "rclcpp/rclcpp.hpp"
+#include "sensor_msgs/msg/joint_state.hpp"
 #include <Eigen/Dense>
 #include <cmath>
 
-// Convenience function to create a 4x4 homogeneous translation matrix.
+using namespace std::chrono_literals;
+
+// Helper functions to build homogeneous transformation matrices.
 Eigen::Matrix4d translate(double x, double y, double z) {
-    Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-    T(0, 3) = x;
-    T(1, 3) = y;
-    T(2, 3) = z;
-    return T;
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T(0, 3) = x;
+  T(1, 3) = y;
+  T(2, 3) = z;
+  return T;
 }
 
-// Create a homogeneous rotation matrix around the X axis.
 Eigen::Matrix4d rotX(double angle_rad) {
-    Eigen::Matrix4d R = Eigen::Matrix4d::Identity();
-    double c = cos(angle_rad);
-    double s = sin(angle_rad);
-    R(1, 1) = c;  R(1, 2) = -s;
-    R(2, 1) = s;  R(2, 2) = c;
-    return R;
+  Eigen::Matrix4d R = Eigen::Matrix4d::Identity();
+  double c = std::cos(angle_rad);
+  double s = std::sin(angle_rad);
+  R(1,1) = c;  R(1,2) = -s;
+  R(2,1) = s;  R(2,2) = c;
+  return R;
 }
 
-// Create a homogeneous rotation matrix around the Y axis.
 Eigen::Matrix4d rotY(double angle_rad) {
-    Eigen::Matrix4d R = Eigen::Matrix4d::Identity();
-    double c = cos(angle_rad);
-    double s = sin(angle_rad);
-    R(0, 0) = c;  R(0, 2) = s;
-    R(2, 0) = -s; R(2, 2) = c;
-    return R;
+  Eigen::Matrix4d R = Eigen::Matrix4d::Identity();
+  double c = std::cos(angle_rad);
+  double s = std::sin(angle_rad);
+  R(0,0) = c;  R(0,2) = s;
+  R(2,0) = -s; R(2,2) = c;
+  return R;
 }
 
-// Given a roll and pitch, compute the transformation for one module.
-// The URDF defines for each module:
-//   - A fixed translation before the roll joint: (0,0,0.075)
-//   - A roll rotation about x axis.
-//   - A pitch rotation about y axis (with no additional translation between the two joints)
-//   - A fixed translation after the pitch joint: (0,0,0.075)
-// Note: In your URDF sometimes the joint origin for pitch is (0,0,0) and then a fixed transform follows.
+// Compute the transformation for one module
+// The transform follows the sequence:
+//    fixed translation (0,0,0.075) -> roll rotation about x -> pitch rotation about y -> fixed translation (0,0,0.075)
 Eigen::Matrix4d computeModuleTransform(double roll, double pitch) {
-    Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
-    // Fixed translation before roll joint
-    T = translate(0, 0, 0.075) * T;
-    // Apply roll rotation (about x-axis)
-    T = rotX(roll) * T;
-    // Apply pitch rotation (about y-axis)
-    T = rotY(pitch) * T;
-    // Fixed translation after the pitch joint to reach the upper link
-    T = translate(0, 0, 0.075) * T;
-    return T;
+  Eigen::Matrix4d T = Eigen::Matrix4d::Identity();
+  T = translate(0, 0, 0.075) * T;
+  T = rotX(roll) * T;
+  T = rotY(pitch) * T;
+  T = translate(0, 0, 0.075) * T;
+  return T;
 }
 
-int main() {
-    // In a real-world application these values would be received from joint_state_publisher.
-    // Here we hard code some sample joint angles (in radians) for modules 1 through 6.
-    struct ModuleAngles {
-        double roll;
-        double pitch;
-    };
+// Utility function: get the joint angle by name from a joint state message, or return 0 if not found.
+double getJointAngle(const sensor_msgs::msg::JointState::SharedPtr msg, const std::string & joint_name) {
+  for (size_t i = 0; i < msg->name.size(); ++i) {
+    if (msg->name[i] == joint_name) {
+      return msg->position[i];
+    }
+  }
+  return 0.0;
+}
 
-    ModuleAngles modules[6] = {
-        {0.1, 0.2},   // module1
-        {0.15, 0.1},  // module2
-        {0.0, -0.2},  // module3
-        {0.05, 0.0},  // module4
-        {-0.1, 0.05}, // module5
-        {0.2, -0.1}   // module6
-    };
+class ForwardKinematicsNode : public rclcpp::Node
+{
+public:
+  ForwardKinematicsNode()
+  : Node("forward_kinematics_node")
+  {
+    subscription_ = this->create_subscription<sensor_msgs::msg::JointState>(
+      "joint_states", 10,
+      std::bind(&ForwardKinematicsNode::jointStateCallback, this, std::placeholders::_1));
+    RCLCPP_INFO(this->get_logger(), "Forward kinematics node has been started.");
+  }
 
-    // Start from the base_link.
+private:
+  void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr msg)
+  {
+    // Assume the robot has 6 modules and for each module, the joints are:
+    // "module{i}_gimbal_roll" and "module{i}_gimbal_pitch" for modules 1 to 6
+    const int num_modules = 6;
     Eigen::Matrix4d T_total = Eigen::Matrix4d::Identity();
 
-    // For module 1, the fixed joint from base_link to module1_lower_link is identity (as defined).
-    // Now chain the transformations for modules 1 to 6.
-    for (int i = 0; i < 6; ++i) {
-        Eigen::Matrix4d T_module = computeModuleTransform(modules[i].roll, modules[i].pitch);
-        T_total = T_total * T_module;
+    // Process each module in order
+    for (int i = 1; i <= num_modules; ++i) {
+      std::string roll_joint = "module" + std::to_string(i) + "_gimbal_roll";
+      std::string pitch_joint = "module" + std::to_string(i) + "_gimbal_pitch";
+
+      double roll_angle  = getJointAngle(msg, roll_joint);
+      double pitch_angle = getJointAngle(msg, pitch_joint);
+
+      // Compute transformation for this module
+      Eigen::Matrix4d T_module = computeModuleTransform(roll_angle, pitch_angle);
+      T_total = T_total * T_module;
     }
 
-    // The position of module6_upper_link is the translation part of the final transform.
-    Eigen::Vector3d module6_position = T_total.block<3,1>(0, 3);
+    // Extract the position of the end effector (hand) from T_total (translation part)
+    Eigen::Vector3d position = T_total.block<3, 1>(0, 3);
+    RCLCPP_INFO(this->get_logger(), "End-effector position: x: %.3f, y: %.3f, z: %.3f",
+                position.x(), position.y(), position.z());
+  }
 
-    std::cout << "Module6 position (x, y, z): "
-              << module6_position.transpose() << std::endl;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr subscription_;
+};
 
-    return 0;
+int main(int argc, char * argv[])
+{
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<ForwardKinematicsNode>();
+  rclcpp::spin(node);
+  rclcpp::shutdown();
+  return 0;
 }

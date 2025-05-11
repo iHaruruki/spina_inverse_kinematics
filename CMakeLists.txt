@@ -40,6 +40,7 @@ add_executable(forward_kinematics_node src/forward_kinematics_node.cpp)
 ament_target_dependencies(forward_kinematics_node
   rclcpp
   geometry_msgs
+  sensor_msgs
 )
 
 install(TARGETS
