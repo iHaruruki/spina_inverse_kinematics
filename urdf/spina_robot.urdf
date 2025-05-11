@@ -68,7 +68,6 @@
     <limit lower="-0.5236" upper="0.5236" effort="1" velocity="1"/>
   </joint>
 
-  <!--########## Module1 ##########-->
   <!-- module1_lower_link -->
   <link name="module1_upper_link">
     <visual>
@@ -99,5 +98,7 @@
     <child link="module1_upper_link"/>
     <origin xyz="0 0 0.075" rpy="0 0 0"/>
   </joint>
+
+   <!--########## Module2 ##########-->
 
 </robot>
