@@ -99,8 +99,8 @@
     <origin xyz="0 0 0.075" rpy="0 0 0"/>
   </joint>
 
-   <!--########## Module2 ##########-->
-   <!-- module1_lower_link -->
+  <!--########## Module2 ##########-->
+  <!-- module1_lower_link -->
   <link name="module2_lower_link">
     <visual>
       <origin xyz="0 0 0.02" rpy="0 0 0"/>
@@ -192,6 +192,102 @@
   <joint name="odule2_pich_link_TO_module2_upper_link" type="fixed">
     <parent link="module2_pich_link"/>
     <child link="module2_upper_link"/>
+    <origin xyz="0 0 0.075" rpy="0 0 0"/>
+  </joint>
+
+  <!--########## Module3 ##########-->
+  <!-- module1_lower_link -->
+  <link name="module3_lower_link">
+    <visual>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.1" length="0.02"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.1" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <joint name="base_link_TO_module3_lower_link" type="fixed">
+    <parent link="module2_upper_link"/>
+    <child link="module3_lower_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="module3_roll_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.05"/>
+      <inertia ixx="0.0005" ixy="0" ixz="0" iyy="0.0005" iyz="0" izz="0.0005"/>
+    </inertial>
+  </link>
+
+  <joint name="module3_gimbal_roll" type="revolute">
+    <parent link="module3_lower_link"/>
+    <child link="module3_roll_link"/>
+    <origin xyz="0 0 0.075" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <!-- Limit set to -30° to 30° which is approximately -0.5236 to 0.5236 radians -->
+    <limit lower="-0.5236" upper="0.5236" effort="1" velocity="1"/>
+  </joint>
+
+  <link name="module3_pich_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.05"/>
+      <inertia ixx="0.0005" ixy="0" ixz="0" iyy="0.0005" iyz="0" izz="0.0005"/>
+    </inertial>
+  </link>
+
+  <joint name="module3_gimbal_pitch" type="revolute">
+    <parent link="module3_roll_link"/>
+    <child link="module3_pich_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <!-- Limit set to -30° to 30° which is approximately -0.5236 to 0.5236 radians -->
+    <limit lower="-0.5236" upper="0.5236" effort="1" velocity="1"/>
+  </joint>
+
+  <!-- module2_upper_link -->
+  <link name="module3_upper_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.1" length="0.02"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.1" length="0.02"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.1"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <!-- Roll joint: rotates about the X-axis -->
+  <joint name="odule3_pich_link_TO_module2_upper_link" type="fixed">
+    <parent link="module3_pich_link"/>
+    <child link="module3_upper_link"/>
     <origin xyz="0 0 0.075" rpy="0 0 0"/>
   </joint>
 
