@@ -9,6 +9,7 @@ def generate_launch_description():
 
     # File paths
     urdf_file = os.path.join(get_package_share_directory(package_name), 'urdf', 'spina_robot.urdf')
+    rviz_config_dir = os.path.join(get_package_share_directory('lucia_cartographer'), 'rviz', 'spina_robot.rviz')
 
     # Read URDF contents
     with open(urdf_file, 'r') as infp:
@@ -33,7 +34,14 @@ def generate_launch_description():
             executable='inverse_kinematics_node',
             name='inverse_kinematics_node',
             output='screen'
-        )
+        ),
+        launch_ros.actions.Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', rviz_config_dir],
+            output='screen'
+        ),
     ])
 
 if __name__ == '__main__':
