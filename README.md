@@ -17,7 +17,7 @@ $ source install/setup.bash
 ### Description
 ## URDF test
 ```
-$ ros2 launch urdf_tutorial display.launch.py model:=~/ros2_ws/src/spina_inverse_kinematics/urdf/spina_robot.urdf
+$ ros2 launch urdf_tutorial display.launch.py model:=/home/<username>/ros2_ws/src/spina_inverse_kinematics/urdf/spina_robot.urdf
 ```
 ## License
 ## Authors
